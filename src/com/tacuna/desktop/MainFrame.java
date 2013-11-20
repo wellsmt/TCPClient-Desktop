@@ -25,11 +25,11 @@ import com.lp.io.DeviceBroadcastMessage;
 import com.lp.io.Message;
 import com.lp.io.MessageConsumer;
 import com.lp.io.UdpBroadcast;
+import javax.swing.JTabbedPane;
 
 public class MainFrame extends JFrame {
 
 	private JPanel contentPane;	
-	private JButton refreshButton;
 	private JList deviceList;	
 	private DefaultListModel listModel;	
 
@@ -42,12 +42,12 @@ public class MainFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
-		refreshButton = new JButton("Refresh");		
 		listModel = new DefaultListModel();
-		deviceList = new JList(listModel);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);		
 		contentPane.setLayout(new FormLayout(new ColumnSpec[] {
+				FormFactory.RELATED_GAP_COLSPEC,
+				ColumnSpec.decode("default:grow"),
 				FormFactory.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("default:grow"),
 				FormFactory.RELATED_GAP_COLSPEC,
@@ -60,19 +60,22 @@ public class MainFrame extends JFrame {
 				FormFactory.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("default:grow"),
 				FormFactory.RELATED_GAP_ROWSPEC,
+				RowSpec.decode("default:grow"),
+				FormFactory.RELATED_GAP_ROWSPEC,
 				FormFactory.DEFAULT_ROWSPEC,
 				FormFactory.RELATED_GAP_ROWSPEC,
 				FormFactory.DEFAULT_ROWSPEC,}));
-				
-		contentPane.add(deviceList, "2, 2, fill, fill");
-				
-		contentPane.add(refreshButton, "8, 6");
 		
-		refreshButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-			}
-		});
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		contentPane.add(tabbedPane, "1, 1, 10, 8, fill, fill");
+		
+		JPanel devicePanel = new JPanel();
+		tabbedPane.addTab("Data", null, devicePanel, null);
+		deviceList = new JList(listModel);
+		devicePanel.add(deviceList);
+		
+		JPanel configPanel = new JPanel();
+		tabbedPane.addTab("Config", null, configPanel, null);
 		startDiscovery();
 		setVisible(true);
 	}
