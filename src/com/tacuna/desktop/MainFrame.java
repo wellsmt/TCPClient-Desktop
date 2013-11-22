@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -29,6 +31,8 @@ import javax.swing.JTabbedPane;
 
 public class MainFrame extends JFrame {
 
+	private HashSet<DeviceConnectionInformation> deviceConnectionInformation;
+	private static Logger log = Logger.getLogger(MainFrame.class.getName());
 	private JPanel contentPane;	
 	private JList deviceList;	
 	private DefaultListModel listModel;	
@@ -75,14 +79,15 @@ public class MainFrame extends JFrame {
 		devicePanel.add(deviceList);
 		
 		JPanel configPanel = new JPanel();
-		tabbedPane.addTab("Config", null, configPanel, null);
-		startDiscovery();
+		tabbedPane.addTab("Config", null, configPanel, null);		
 		setVisible(true);
+		
+		startDiscovery();
 	}
 	
 	private void startDiscovery()
 	{	
-		SwingWorker<Void, HashSet<String>> worker = new SwingWorker<Void, HashSet<String>>() {
+		SwingWorker<Void, HashSet<DeviceConnectionInformation>> worker = new SwingWorker<Void, HashSet<DeviceConnectionInformation>>() {
 
 			@Override
 			protected Void doInBackground() throws Exception {
@@ -106,8 +111,8 @@ public class MainFrame extends JFrame {
 					System.out.println("Sending message...");
 					broadcaster.send("Discovery: Who is out there?\r\n", 30303);
 
-					Thread.sleep(1000);	
-					publish(printer.getDeviceAddresses());
+					Thread.sleep(1000);
+					publish(printer.getDevices());
 					// Connect to the device here:
 					// SocketConnector connector = new SocketConnector();
 				    }
@@ -130,11 +135,11 @@ public class MainFrame extends JFrame {
 			
 			
 			@Override
-			protected void process(List<HashSet<String>> chunks) {
-				HashSet<String> devices = chunks.get(chunks.size() - 1);
+			protected void process(List<HashSet<DeviceConnectionInformation>> chunks) {				
+				deviceConnectionInformation = chunks.get(chunks.size() - 1);
 				listModel.clear();
-				for (String device : devices) {
-					listModel.addElement(device);
+				for (DeviceConnectionInformation device : deviceConnectionInformation) {
+					listModel.addElement(device.getName() + " " + device.getTimeString());
 				}
 			}
 
@@ -149,16 +154,22 @@ public class MainFrame extends JFrame {
 	}
 	
 	public class BroadcastPrintingClass implements MessageConsumer {
-		protected HashSet<String> deviceAddresses = new HashSet<String>();
+		static final long TIMEOUT_MILLI = 30000; // TODO: Consider timeing out resources
+		protected HashSet<DeviceConnectionInformation> devices = new HashSet<DeviceConnectionInformation>();
 		@Override
 		public void onMessage(Message message) {
 		    DeviceBroadcastMessage broadCastMessage = (DeviceBroadcastMessage) message;
-		    deviceAddresses.add(broadCastMessage.getHost() + ":"
-			    + Integer.toString(broadCastMessage.getTcpPort()));
+		    DeviceConnectionInformation newDevice = new DeviceConnectionInformation(broadCastMessage.getHost(), 
+		    		broadCastMessage.getTcpPort(), 
+		    		broadCastMessage.getMacAddress(), 
+		    		broadCastMessage.getDeviceName(),
+		    		broadCastMessage.getTimestamp());
+		    		    
+		    devices.add(newDevice);
 		}
 		
-		public HashSet<String> getDeviceAddresses() {
-			return deviceAddresses;
+		public HashSet<DeviceConnectionInformation> getDevices() {				
+			return devices;
 		}
 	}
 
