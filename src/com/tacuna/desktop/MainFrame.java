@@ -14,8 +14,13 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.JTree;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
@@ -28,14 +33,18 @@ import com.lp.io.Message;
 import com.lp.io.MessageConsumer;
 import com.lp.io.UdpBroadcast;
 import javax.swing.JTabbedPane;
+import javax.swing.JLayeredPane;
+import com.javaswingcomponents.accordion.JSCAccordion;
+import com.javaswingcomponents.accordion.TabOrientation;
+import com.javaswingcomponents.accordion.listener.AccordionEvent;
+import com.javaswingcomponents.accordion.listener.AccordionListener;
 
 public class MainFrame extends JFrame {
 
-	private HashSet<DeviceConnectionInformation> deviceConnectionInformation;
+	private HashSet<DeviceConnectionInformation> deviceConnectionInformation = new HashSet<DeviceConnectionInformation>();
 	private static Logger log = Logger.getLogger(MainFrame.class.getName());
 	private JPanel contentPane;	
-	private JList deviceList;	
-	private DefaultListModel listModel;	
+	private	JSCAccordion deviceList;
 
 	/**
 	 * Create the frame.
@@ -44,9 +53,9 @@ public class MainFrame extends JFrame {
 		super(title);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 900, 600);
 		contentPane = new JPanel();
-		listModel = new DefaultListModel();
+
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);		
 		contentPane.setLayout(new FormLayout(new ColumnSpec[] {
@@ -71,15 +80,41 @@ public class MainFrame extends JFrame {
 				FormFactory.DEFAULT_ROWSPEC,}));
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		contentPane.add(tabbedPane, "1, 1, 10, 8, fill, fill");
+		contentPane.add(tabbedPane, "1, 1, 10, 8, fill, fill");		
 		
-		JPanel devicePanel = new JPanel();
-		tabbedPane.addTab("Data", null, devicePanel, null);
-		deviceList = new JList(listModel);
-		devicePanel.add(deviceList);
+		deviceList = new JSCAccordion();
+		deviceList.setTabOrientation(TabOrientation.VERTICAL);
 		
-		JPanel configPanel = new JPanel();
-		tabbedPane.addTab("Config", null, configPanel, null);		
+		deviceList.addAccordionListener(new AccordionListener() {
+			
+			@Override
+			public void accordionChanged(AccordionEvent accordionEvent) {
+				//available fields on accordionEvent.
+				
+				switch (accordionEvent.getEventType()) {
+				case TAB_ADDED: {
+					deviceList.setSelectedIndex(accordionEvent.getTabIndex());
+					break;
+				}
+				case TAB_REMOVED: {
+					//add your logic here to react to a tab being removed.
+					break;					
+				}
+				case TAB_SELECTED: {
+					//add your logic here to react to a tab being selected.
+					break;					
+				}
+				}
+			}
+		});
+
+		/* TEST CODE */
+		//deviceList.addTab("TESTDEVICE001", new JScrollPane(new JLabel("Insert Device Details here...")));
+		/* TEST CODE */
+
+		tabbedPane.addTab("Data", null, deviceList, null);				
+		tabbedPane.addTab("Config", null, new JPanel(), null);
+					
 		setVisible(true);
 		
 		startDiscovery();
@@ -136,41 +171,41 @@ public class MainFrame extends JFrame {
 			
 			@Override
 			protected void process(List<HashSet<DeviceConnectionInformation>> chunks) {				
-				deviceConnectionInformation = chunks.get(chunks.size() - 1);
-				listModel.clear();
-				for (DeviceConnectionInformation device : deviceConnectionInformation) {
-					listModel.addElement(device.getName() + " " + device.getTimeString());
+				HashSet<DeviceConnectionInformation> newDevices = chunks.get(chunks.size() - 1);
+				for (DeviceConnectionInformation device : newDevices) {
+
+					if( !this.contains(device) ) {						
+						deviceConnectionInformation.add(device);
+						
+						String title = device.getName() + " " + (new Date()).toString();	
+						JTextArea details = new JTextArea("DETAILS" + "\nHOST : " + device.getHost() + "\nPORT : " + device.getPort() + "\nMAC ADDRESS : " + device.getMacAddress());
+						deviceList.addTab(title, details);												
+					}
+					else {
+						// TODO: Do some update type stuff here, like device status/type/etc
+					}
 				}
 			}
+
+			private boolean contains(DeviceConnectionInformation newDevice) {
+				for(DeviceConnectionInformation device : deviceConnectionInformation) {
+					if(device.getMacAddress().equals(newDevice.getMacAddress()))
+						return true;
+				}
+				
+				return false;				
+			}
+
+
 
 			@Override
 			protected void done() {
 												
 			}
-							
+				
 		};
 		
 		worker.execute();
 	}
-	
-	public class BroadcastPrintingClass implements MessageConsumer {
-		static final long TIMEOUT_MILLI = 30000; // TODO: Consider timeing out resources
-		protected HashSet<DeviceConnectionInformation> devices = new HashSet<DeviceConnectionInformation>();
-		@Override
-		public void onMessage(Message message) {
-		    DeviceBroadcastMessage broadCastMessage = (DeviceBroadcastMessage) message;
-		    DeviceConnectionInformation newDevice = new DeviceConnectionInformation(broadCastMessage.getHost(), 
-		    		broadCastMessage.getTcpPort(), 
-		    		broadCastMessage.getMacAddress(), 
-		    		broadCastMessage.getDeviceName(),
-		    		broadCastMessage.getTimestamp());
-		    		    
-		    devices.add(newDevice);
-		}
 		
-		public HashSet<DeviceConnectionInformation> getDevices() {				
-			return devices;
-		}
-	}
-
 }

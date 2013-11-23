@@ -15,7 +15,6 @@ public class DeviceConnectionInformation {
     private int port;
     private String macAddress;
     private String name;
-    private Date timestamp;
 
     /**
      * Constructor.
@@ -33,7 +32,6 @@ public class DeviceConnectionInformation {
 	this.port = port;
 	this.macAddress = macAddress;
 	this.setName(name);
-	this.timestamp = new Date(timestamp);
     }
 
     @Override
@@ -73,14 +71,6 @@ public class DeviceConnectionInformation {
 	if (port != other.port)
 	    return false;
 	return true;
-    }
-
-    public String getTimeString() {
-    	return timestamp.toString();
-    }
-    
-    public long getTime() {
-    	return timestamp.getTime();
     }
     
     public String getHost() {
