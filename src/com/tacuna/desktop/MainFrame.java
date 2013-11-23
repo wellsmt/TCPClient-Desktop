@@ -136,9 +136,8 @@ public class MainFrame extends JFrame {
 				    // address which might change from network to network. A local
 				    // address on a typical home network would look like 192.168.1.255.
 				    // We need to figure out a better to do this find the local address.
-				    UdpBroadcast broadcaster = new UdpBroadcast(12345,
-					    InetAddress.getByName("192.168.1.255"));
-				    broadcaster.registerObserver(printer);
+					UdpBroadcast broadcaster = ConnectionManager.INSTANCE.getBroadcaster();
+					broadcaster.registerObserver(printer);
 				    Thread listenThread = new Thread(broadcaster);
 				    listenThread.start();
 				    while (true) {
