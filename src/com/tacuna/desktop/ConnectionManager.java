@@ -42,6 +42,7 @@ public enum ConnectionManager implements PropertyChangeListener {
     public static final int RESPONSE_PORT = 30303;
 
     private UdpBroadcast broadcaster;
+    // TODO: Store multiple connections, this should be a list in the future
     private SocketConnector connection;
 
     private AD7195W device = null;
@@ -158,7 +159,7 @@ public enum ConnectionManager implements PropertyChangeListener {
      */
     protected InetAddress getBroadcastAddress(){
     	try {
-			return InetAddress.getByName("192.168.1.255");
+			return InetAddress.getByName("255.255.255.255");
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

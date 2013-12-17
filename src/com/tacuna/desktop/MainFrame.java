@@ -164,20 +164,19 @@ public class MainFrame extends JFrame {
 				    e.printStackTrace();
 				}		
 				return null;
-			}
-
-			
+			}			
 			
 			@Override
 			protected void process(List<HashSet<DeviceConnectionInformation>> chunks) {				
 				HashSet<DeviceConnectionInformation> newDevices = chunks.get(chunks.size() - 1);
-				for (DeviceConnectionInformation device : newDevices) {
+				for (final DeviceConnectionInformation device : newDevices) {
 
 					if( !this.contains(device) ) {						
 						deviceConnectionInformation.add(device);
 						
-						String title = device.getName() + " " + (new Date()).toString();	
-						JTextArea details = new JTextArea("DETAILS" + "\nHOST : " + device.getHost() + "\nPORT : " + device.getPort() + "\nMAC ADDRESS : " + device.getMacAddress());
+						String title = device.getName() + " " + (new Date()).toString();
+						DeviceDetails details = new DeviceDetails(device);
+										
 						deviceList.addTab(title, details);												
 					}
 					else {
@@ -194,8 +193,6 @@ public class MainFrame extends JFrame {
 				
 				return false;				
 			}
-
-
 
 			@Override
 			protected void done() {
