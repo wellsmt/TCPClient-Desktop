@@ -40,9 +40,9 @@ import com.javaswingcomponents.accordion.listener.AccordionEvent;
 import com.javaswingcomponents.accordion.listener.AccordionListener;
 
 public class MainFrame extends JFrame {
-
-	private HashSet<DeviceConnectionInformation> deviceConnectionInformation = new HashSet<DeviceConnectionInformation>();
 	private static Logger log = Logger.getLogger(MainFrame.class.getName());
+	
+	private HashSet<DeviceConnectionInformation> deviceConnectionInformation = new HashSet<DeviceConnectionInformation>();
 	private JPanel contentPane;	
 	private	JSCAccordion deviceList;
 
@@ -129,8 +129,6 @@ public class MainFrame extends JFrame {
 
 			    BroadcastPrintingClass printer = new BroadcastPrintingClass();
 				try {				    
-
-
 				    // The IP address can be 255.255.255.255 but most documents
 				    // seem to indicate that its better to use the local broadcast
 				    // address which might change from network to network. A local
@@ -141,14 +139,12 @@ public class MainFrame extends JFrame {
 				    Thread listenThread = new Thread(broadcaster);
 				    listenThread.start();
 				    while (true) {
-					Thread.sleep(1000);
-					System.out.println("Sending message...");
-					broadcaster.send("Discovery: Who is out there?\r\n", 30303);
+				    	Thread.sleep(1000);
+				    	System.out.println("Sending message...");
+				    	broadcaster.send("Discovery: Who is out there?\r\n", 30303);
 
-					Thread.sleep(1000);
-					publish(printer.getDevices());
-					// Connect to the device here:
-					// SocketConnector connector = new SocketConnector();
+				    	Thread.sleep(1000);
+				    	publish(printer.getDevices());
 				    }
 				} catch (SocketException e) {
 				    // TODO Auto-generated catch block
@@ -181,6 +177,7 @@ public class MainFrame extends JFrame {
 					}
 					else {
 						// TODO: Do some update type stuff here, like device status/type/etc
+						// we already have the device do some updating of contents
 					}
 				}
 			}

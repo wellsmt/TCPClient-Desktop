@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.lp.io.MessageProducer;
 import com.lp.io.SocketConnector;
@@ -30,7 +32,7 @@ import com.tacuna.common.devices.DeviceInterface;
 public enum ConnectionManager implements PropertyChangeListener {
     /** The singleton instance of the ConnectionManager */
     INSTANCE;
-    
+	private static Logger log = Logger.getLogger(ConnectionManager.class.getName());
     private static final String TAG = "CONNECTION MANAGER";
 
     /** This is the devices UDP listening port. */
@@ -74,31 +76,27 @@ public enum ConnectionManager implements PropertyChangeListener {
      */
     public SocketConnector createConnection(final String host, int port) {
 	// Attempt connection.
-	try {
-	    if (connection != null && connection.isConnected()) {
-		connection.removeChangeListener(this);
-		connection.close();
-	    }
+    	try {
+    		if (connection != null && connection.isConnected()) {
+    			connection.removeChangeListener(this);
+    			connection.close();
+    		}
 
-//	    log.i(TAG, String.format("Creating connection to %s:%d", host, port));
-	    device = new AD7195W();
-	    device.setNetworkAddress(InetSocketAddress.createUnresolved(host,
-		    port));
-	    device.connect();
-	    connection = device.getConnection();
-	    // connection = new SocketConnector(host, port, dataInterpreter);
-	    connection.addChangeListener(this);
-	    DeviceCommandSchedule schedule = new DeviceCommandSchedule(device);
-	    // schedule.schedule(new Command("MEASure:EXT:ADC?", 1), 1000);
-	    // schedule.schedule(new Command("MEASure:EXT:ADC?", 2), 1000);
-	    // schedule.schedule(new Command("MEASure:EXT:ADC?", 3), 1000);
-	    deviceSchedules.put(device.getDeviceName(), schedule);
-	    return connection;
-	} catch (final Exception err) {
-//	    Log.e(TAG, "Unable to create connection.", err);
+    		log.log(Level.INFO, String.format("Creating connection to %s:%d", host, port));
+    		device = new AD7195W();
+    		device.setNetworkAddress(InetSocketAddress.createUnresolved(host, port));
+    		device.connect();
+    		connection = device.getConnection();
 
-	}
-	return null;
+    		connection.addChangeListener(this);
+    		DeviceCommandSchedule schedule = new DeviceCommandSchedule(device);
+
+    		deviceSchedules.put(device.getDeviceName(), schedule);
+    		return connection;
+    	} catch (final Exception err) {
+    		log.log(Level.SEVERE, "Unable to create connection.", err);
+    	}
+    	return null;
     }
 
     /**
@@ -172,9 +170,9 @@ public enum ConnectionManager implements PropertyChangeListener {
      * may change.
      */
     public void closeAll() {
-	if (connection != null) {
-	    connection.close();
-	}
+    	if (connection != null) {
+	    	connection.close();
+		}
     }
 
     /**
