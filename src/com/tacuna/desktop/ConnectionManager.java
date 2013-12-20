@@ -83,6 +83,9 @@ public enum ConnectionManager implements PropertyChangeListener {
     		}
 
     		log.log(Level.INFO, String.format("Creating connection to %s:%d", host, port));
+//    		if(device != null){
+//    			device.close();
+//    		}
     		device = new AD7195W();
     		device.setNetworkAddress(InetSocketAddress.createUnresolved(host, port));
     		device.connect();
@@ -171,8 +174,12 @@ public enum ConnectionManager implements PropertyChangeListener {
      */
     public void closeAll() {
     	if (connection != null) {
+    		connection.removeChangeListener(this);
 	    	connection.close();
 		}
+    	if(device != null){
+    		device.close();
+    	}
     }
 
     /**

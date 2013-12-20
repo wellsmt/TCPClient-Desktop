@@ -32,7 +32,7 @@ import java.awt.GridLayout;
 public class DeviceDetails extends JPanel {
 
 	private static Logger log = Logger.getLogger(DeviceDetails.class.getName());
-	SocketConnector connection = null;
+	//SocketConnector connection = null;
 	DeviceConnectionInformation deviceInformation = null;
 	DeviceInterface device = null;
 	DeviceChannelLogger channelLogger = null;
@@ -54,12 +54,13 @@ public class DeviceDetails extends JPanel {
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED){
 					btnConnect.setText("ON");
-					btnConnect.setBackground(Color.green);
-					connection = ConnectionManager.INSTANCE.createConnection(deviceInformation.getHost(), deviceInformation.getPort());
+					btnConnect.setBackground(Color.green);					
+					/*connection =*/ ConnectionManager.INSTANCE.createConnection(deviceInformation.getHost(), deviceInformation.getPort());
 					waitForConnection();
 				} else {
 					btnConnect.setText("OFF");
-					btnConnect.setBackground(Color.red);
+					btnConnect.setBackground(Color.red);					
+					//connection.close();					
 					closeConnection();
 				}				
 			}
@@ -85,12 +86,12 @@ public class DeviceDetails extends JPanel {
 
 			@Override
 			protected Void doInBackground() throws Exception {				
-				while(!connection.isConnected());
+				while(!ConnectionManager.INSTANCE.isAppConnected(deviceInformation));
 				return null;
 			}
 			
 			@Override
-			protected void done() {													
+			protected void done() {						
 				channelLogger = new DeviceChannelLogger(ConnectionManager.INSTANCE.getDevice());
 				channelLogger.startLogging();			
 			}
